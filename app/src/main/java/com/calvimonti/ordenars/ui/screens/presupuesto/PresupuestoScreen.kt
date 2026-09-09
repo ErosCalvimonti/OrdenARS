@@ -208,7 +208,12 @@ private fun ResumenGeneral(total: Double, gastado: Double) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             MetricaResumen("Total presupuestado", total, TextoPrimario, Modifier.weight(1f))
             MetricaResumen("Gastado", gastado, Alerta, Modifier.weight(1f))
-            MetricaResumen("Disponible", disponible, Secundario, Modifier.weight(1f))
+            MetricaResumen(
+                "Disponible",
+                disponible,
+                if (disponible < 0) Alerta else Secundario,
+                Modifier.weight(1f)
+            )
         }
         Spacer(Modifier.height(16.dp))
         LinearProgressIndicator(

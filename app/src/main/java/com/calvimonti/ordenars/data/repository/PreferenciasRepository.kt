@@ -60,4 +60,19 @@ class PreferenciasRepository @Inject constructor(
             prefs[ALERTAS_PRESUPUESTO_DISPARADAS] = actuales + clave
         }
     }
+
+    /** "Rearma" una alerta: la saca del set para que pueda volver a dispararse
+     * si el gasto de esa categoría cruza de nuevo el umbral. */
+    suspend fun desmarcarAlertaPresupuestoDisparada(clave: String) {
+        dataStore.edit { prefs ->
+            val actuales = prefs[ALERTAS_PRESUPUESTO_DISPARADAS] ?: return@edit
+            if (clave in actuales) prefs[ALERTAS_PRESUPUESTO_DISPARADAS] = actuales - clave
+        }
+    }
+
+    /** Borra todos los marcadores de alertas (se usa al limpiar el historial:
+     * sin gastos, ninguna alerta tiene sentido). */
+    suspend fun limpiarAlertasPresupuestoDisparadas() {
+        dataStore.edit { prefs -> prefs.remove(ALERTAS_PRESUPUESTO_DISPARADAS) }
+    }
 }

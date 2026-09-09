@@ -90,6 +90,24 @@ class DashboardViewModel @Inject constructor(
         .map { gastos -> gastos.take(5) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 
+    /**
+     * Categoría → porcentaje usado de su presupuesto este mes. Solo las que
+     * tienen presupuesto configurado. Lo usa la fila de "Últimos movimientos"
+     * para el puntito de estado al lado del ícono.
+     */
+    val porcentajePresupuestoPorCategoria: StateFlow<Map<String, Float>> = combine(
+        presupuestoRepository.obtenerPorMes(mes, anio),
+        gastosDelMes
+    ) { presupuestos, gastos ->
+        val gastadoPorCategoria = gastos.groupBy { it.categoria }
+            .mapValues { (_, lista) -> lista.sumOf { it.monto } }
+        presupuestos
+            .filter { it.montoMaximo > 0 }
+            .associate { p ->
+                p.categoria to ((gastadoPorCategoria[p.categoria] ?: 0.0) / p.montoMaximo).toFloat()
+            }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
+
     val categorias: StateFlow<List<Categoria>> = categoriaRepository.obtenerTodas()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
 }

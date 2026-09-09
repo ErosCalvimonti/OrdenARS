@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Warning
@@ -63,6 +64,45 @@ private val formatoPesos: NumberFormat by lazy {
 }
 
 fun formatearMonto(monto: Double): String = "$${formatoPesos.format(monto)}"
+
+/**
+ * Color "semáforo" según cuánto de un presupuesto está usado, con los mismos
+ * cortes que las alertas: verde hasta el 80%, ámbar entre 80 y 100%, rojo
+ * pasado el límite. Se usa para el puntito de estado en las filas de gasto
+ * (Dashboard e Historial) y para la sección de presupuesto del detalle.
+ */
+fun colorSemaforoPresupuesto(porcentajeUsado: Float): Color = when {
+    porcentajeUsado >= 1f -> Alerta
+    porcentajeUsado >= 0.8f -> Advertencia
+    else -> Secundario
+}
+
+/**
+ * Puntito de color (verde / ámbar / rojo) que se superpone al ícono de un gasto
+ * para indicar cómo va el presupuesto de su categoría este mes. [colorFondo] es
+ * el color de la superficie de atrás, para el "recorte" que lo despega del ícono.
+ */
+@Composable
+fun PuntoEstadoPresupuesto(
+    porcentajeUsado: Float,
+    colorFondo: Color,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .size(12.dp)
+            .clip(CircleShape)
+            .background(colorFondo),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            Modifier
+                .size(8.dp)
+                .clip(CircleShape)
+                .background(colorSemaforoPresupuesto(porcentajeUsado))
+        )
+    }
+}
 
 @Composable
 fun MontoText(

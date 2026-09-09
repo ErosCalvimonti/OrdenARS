@@ -103,6 +103,9 @@ class ConfiguracionViewModel @Inject constructor(
     fun limpiarHistorial() {
         viewModelScope.launch {
             gastoRepository.eliminarTodos()
+            // Sin gastos, los marcadores de alertas ya disparadas no tienen
+            // sentido — se limpian para que arranquen de cero.
+            preferenciasRepository.limpiarAlertasPresupuestoDisparadas()
             _historialLimpiado.value = true
         }
     }

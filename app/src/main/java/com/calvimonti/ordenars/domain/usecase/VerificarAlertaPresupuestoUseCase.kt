@@ -9,11 +9,18 @@ import javax.inject.Inject
 import kotlinx.coroutines.flow.first
 
 /**
- * Se llama después de registrar un gasto. Si esa categoría tiene presupuesto
- * este mes y el gasto acumulado cruzó el 80% o el 100%, dispara la alerta
- * (push + queda marcada para no repetirla en el próximo gasto del mismo
- * umbral/mes/categoría). El aviso visual en Dashboard/Presupuesto no pasa
- * por acá — ese se recalcula solo, en vivo, a partir del gasto guardado.
+ * Se llama después de registrar O borrar un gasto. Recalcula cuánto se lleva
+ * gastado este mes en esa categoría y, según en qué franja quedó:
+ *
+ * - **>= 100%**: dispara la alerta de "te pasaste" (si no se disparó ya este mes).
+ * - **80–99%**: dispara la de "cerca del límite" (si no se disparó ya), y
+ *   *rearma* la de 100% — así, si volvés a cruzar el 100% después de un borrado,
+ *   vuelve a avisar.
+ * - **< 80%**: rearma las dos. Volviste abajo de todo, la próxima vez que
+ *   cruces cualquiera de los dos umbrales te vuelve a avisar.
+ *
+ * "Disparar" acá es solo la notificación push. El aviso visual en
+ * Dashboard/Presupuesto no pasa por acá — se recalcula solo, en vivo.
  */
 class VerificarAlertaPresupuestoUseCase @Inject constructor(
     private val presupuestoRepository: PresupuestoRepository,
@@ -34,16 +41,36 @@ class VerificarAlertaPresupuestoUseCase @Inject constructor(
             .sumOf { it.monto }
 
         val porcentaje = gastado / presupuesto.montoMaximo
-        val umbral = when {
-            porcentaje >= 1.0 -> 100
-            porcentaje >= 0.8 -> 80
-            else -> return
+        val clave80 = "$categoria|$mes|$anio|80"
+        val clave100 = "$categoria|$mes|$anio|100"
+
+        when {
+            porcentaje >= 1.0 -> {
+                // Ya se cruzó el 80% aunque no se haya notificado en su momento
+                // (p. ej. si el primer gasto saltó directo por encima del 100%):
+                // lo marcamos en silencio para que no salte "cerca del límite"
+                // cuando el monto baje de vuelta a la franja 80–99%.
+                preferenciasRepository.marcarAlertaPresupuestoDisparada(clave80)
+                dispararSiHaceFalta(clave100) {
+                    notificador.notificar(categoria, 100, presupuesto.montoMaximo, gastado)
+                }
+            }
+            porcentaje >= 0.8 -> {
+                preferenciasRepository.desmarcarAlertaPresupuestoDisparada(clave100)
+                dispararSiHaceFalta(clave80) {
+                    notificador.notificar(categoria, 80, presupuesto.montoMaximo, gastado)
+                }
+            }
+            else -> {
+                preferenciasRepository.desmarcarAlertaPresupuestoDisparada(clave80)
+                preferenciasRepository.desmarcarAlertaPresupuestoDisparada(clave100)
+            }
         }
+    }
 
-        val clave = "$categoria|$mes|$anio|$umbral"
+    private suspend fun dispararSiHaceFalta(clave: String, notificar: () -> Unit) {
         if (preferenciasRepository.alertaPresupuestoYaDisparada(clave)) return
-
         preferenciasRepository.marcarAlertaPresupuestoDisparada(clave)
-        notificador.notificar(categoria, umbral, presupuesto.montoMaximo, gastado)
+        notificar()
     }
 }

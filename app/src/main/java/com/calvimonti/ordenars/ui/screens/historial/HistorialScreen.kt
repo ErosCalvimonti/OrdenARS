@@ -48,6 +48,7 @@ import com.calvimonti.ordenars.domain.model.Categoria
 import com.calvimonti.ordenars.domain.model.FiltroHistorial
 import com.calvimonti.ordenars.domain.model.Gasto
 import com.calvimonti.ordenars.domain.model.OrigenGasto
+import com.calvimonti.ordenars.ui.components.PuntoEstadoPresupuesto
 import com.calvimonti.ordenars.ui.components.formatearMonto
 import com.calvimonti.ordenars.ui.navigation.OrdenARSBottomBar
 import com.calvimonti.ordenars.ui.navigation.RutasOrdenARS
@@ -78,6 +79,7 @@ fun HistorialScreen(
     val filtroActivo by viewModel.filtroActivo.collectAsStateWithLifecycle()
     val busqueda by viewModel.busqueda.collectAsStateWithLifecycle()
     val categorias by viewModel.categorias.collectAsStateWithLifecycle()
+    val porcentajePresupuesto by viewModel.porcentajePresupuestoPorCategoria.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -125,6 +127,7 @@ fun HistorialScreen(
                             FilaGastoHistorial(
                                 gasto = gasto,
                                 categoria = categorias.find { it.nombre == gasto.categoria },
+                                porcentajePresupuesto = porcentajePresupuesto[gasto.categoria],
                                 onClick = { onGastoClick(gasto) },
                                 onEliminar = { viewModel.eliminarGasto(gasto) }
                             )
@@ -245,6 +248,7 @@ private fun EncabezadoFecha(etiqueta: String) {
 private fun FilaGastoHistorial(
     gasto: Gasto,
     categoria: Categoria?,
+    porcentajePresupuesto: Float?,
     onClick: () -> Unit,
     onEliminar: () -> Unit
 ) {
@@ -287,14 +291,22 @@ private fun FilaGastoHistorial(
                 .padding(vertical = 10.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Box(
-                modifier = Modifier
-                    .size(40.dp)
-                    .clip(CircleShape)
-                    .background(categoria?.color?.let { colorDesdeHex(it) } ?: FondoSecundario),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(categoria?.icono ?: "📦", style = MaterialTheme.typography.bodyLarge)
+            Box(contentAlignment = Alignment.BottomEnd) {
+                Box(
+                    modifier = Modifier
+                        .size(40.dp)
+                        .clip(CircleShape)
+                        .background(categoria?.color?.let { colorDesdeHex(it) } ?: FondoSecundario),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Text(categoria?.icono ?: "📦", style = MaterialTheme.typography.bodyLarge)
+                }
+                if (porcentajePresupuesto != null) {
+                    PuntoEstadoPresupuesto(
+                        porcentajeUsado = porcentajePresupuesto,
+                        colorFondo = FondoPrincipal
+                    )
+                }
             }
             Spacer(Modifier.width(12.dp))
             Column(modifier = Modifier.weight(1f)) {

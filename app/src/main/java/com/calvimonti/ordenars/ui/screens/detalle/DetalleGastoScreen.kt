@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.DeleteOutline
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -41,7 +42,9 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import com.calvimonti.ordenars.domain.model.GastoPorCategoria
 import com.calvimonti.ordenars.domain.model.OrigenGasto
+import com.calvimonti.ordenars.ui.components.colorSemaforoPresupuesto
 import com.calvimonti.ordenars.ui.components.formatearMonto
 import com.calvimonti.ordenars.ui.theme.Alerta
 import com.calvimonti.ordenars.ui.theme.BorderSutil
@@ -53,6 +56,7 @@ import com.calvimonti.ordenars.ui.theme.TextoSecundario
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import kotlin.math.roundToInt
 
 @Composable
 fun DetalleGastoScreen(
@@ -62,6 +66,7 @@ fun DetalleGastoScreen(
 ) {
     val gasto by viewModel.gasto.collectAsStateWithLifecycle()
     val categoria by viewModel.categoria.collectAsStateWithLifecycle()
+    val presupuestoDeCategoria by viewModel.presupuestoDeCategoria.collectAsStateWithLifecycle()
     var mostrarConfirmarBorrado by remember { mutableStateOf(false) }
 
     Scaffold(
@@ -168,6 +173,11 @@ fun DetalleGastoScreen(
                 }
             }
 
+            presupuestoDeCategoria?.let { item ->
+                Spacer(Modifier.height(16.dp))
+                TarjetaPresupuestoGasto(item = item, montoDelGasto = gastoActual.monto)
+            }
+
             Spacer(Modifier.height(28.dp))
             Row(
                 modifier = Modifier
@@ -245,6 +255,61 @@ private fun FilaDetalle(etiqueta: String, contenido: @Composable () -> Unit) {
         Text(etiqueta, style = MaterialTheme.typography.bodySmall, color = TextoSecundario)
         Spacer(Modifier.height(6.dp))
         contenido()
+    }
+}
+
+@Composable
+private fun TarjetaPresupuestoGasto(item: GastoPorCategoria, montoDelGasto: Double) {
+    val montoMaximo = item.montoPresupuestado ?: return
+    val porcentaje = item.porcentajeUsado
+    val color = colorSemaforoPresupuesto(porcentaje)
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(16.dp))
+            .background(FondoCard)
+            .padding(16.dp)
+    ) {
+        Text(
+            "Presupuesto de ${item.categoria.nombre}",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextoSecundario
+        )
+        Spacer(Modifier.height(10.dp))
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                "${formatearMonto(item.montoGastado)} de ${formatearMonto(montoMaximo)}",
+                style = MaterialTheme.typography.bodyLarge,
+                color = TextoPrimario
+            )
+            Text(
+                "${(porcentaje * 100).roundToInt()}%",
+                style = MaterialTheme.typography.bodyLarge,
+                fontWeight = FontWeight.SemiBold,
+                color = color
+            )
+        }
+        Spacer(Modifier.height(8.dp))
+        LinearProgressIndicator(
+            progress = { porcentaje.coerceIn(0f, 1f) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(8.dp)
+                .clip(RoundedCornerShape(50)),
+            color = color,
+            trackColor = FondoSecundario
+        )
+        Spacer(Modifier.height(8.dp))
+        Text(
+            "Este gasto es el ${(montoDelGasto / montoMaximo * 100).roundToInt()}% del presupuesto del mes",
+            style = MaterialTheme.typography.bodySmall,
+            color = TextoSecundario
+        )
     }
 }
 

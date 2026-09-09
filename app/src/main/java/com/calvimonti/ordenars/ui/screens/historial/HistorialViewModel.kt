@@ -4,9 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.calvimonti.ordenars.data.repository.CategoriaRepository
 import com.calvimonti.ordenars.data.repository.GastoRepository
+import com.calvimonti.ordenars.data.repository.PresupuestoRepository
 import com.calvimonti.ordenars.domain.model.Categoria
 import com.calvimonti.ordenars.domain.model.FiltroHistorial
 import com.calvimonti.ordenars.domain.model.Gasto
+import com.calvimonti.ordenars.domain.usecase.VerificarAlertaPresupuestoUseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -25,8 +27,14 @@ import kotlinx.coroutines.launch
 @HiltViewModel
 class HistorialViewModel @Inject constructor(
     private val gastoRepository: GastoRepository,
-    categoriaRepository: CategoriaRepository
+    categoriaRepository: CategoriaRepository,
+    presupuestoRepository: PresupuestoRepository,
+    private val verificarAlertaPresupuestoUseCase: VerificarAlertaPresupuestoUseCase
 ) : ViewModel() {
+
+    private val calendario = Calendar.getInstance()
+    private val mesActual = calendario.get(Calendar.MONTH) + 1
+    private val anioActual = calendario.get(Calendar.YEAR)
 
     private val _filtroActivo = MutableStateFlow<FiltroHistorial>(FiltroHistorial.Todos)
     val filtroActivo: StateFlow<FiltroHistorial> = _filtroActivo.asStateFlow()
@@ -36,6 +44,24 @@ class HistorialViewModel @Inject constructor(
 
     val categorias: StateFlow<List<Categoria>> = categoriaRepository.obtenerTodas()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyList())
+
+    /**
+     * Categoría → porcentaje usado de su presupuesto ESTE mes (0f, puede pasar
+     * de 1f). Solo las categorías que tienen un presupuesto configurado. Lo usa
+     * la fila del historial para pintar el puntito de estado.
+     */
+    val porcentajePresupuestoPorCategoria: StateFlow<Map<String, Float>> = combine(
+        presupuestoRepository.obtenerPorMes(mesActual, anioActual),
+        gastoRepository.obtenerPorMes(mesActual, anioActual)
+    ) { presupuestos, gastosDelMes ->
+        val gastadoPorCategoria = gastosDelMes.groupBy { it.categoria }
+            .mapValues { (_, lista) -> lista.sumOf { it.monto } }
+        presupuestos
+            .filter { it.montoMaximo > 0 }
+            .associate { p ->
+                p.categoria to ((gastadoPorCategoria[p.categoria] ?: 0.0) / p.montoMaximo).toFloat()
+            }
+    }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), emptyMap())
 
     private val gastosFiltradosLista: StateFlow<List<Gasto>> = combine(
         gastoRepository.obtenerTodos(),
@@ -81,7 +107,12 @@ class HistorialViewModel @Inject constructor(
     }
 
     fun eliminarGasto(gasto: Gasto) {
-        viewModelScope.launch { gastoRepository.eliminar(gasto) }
+        viewModelScope.launch {
+            gastoRepository.eliminar(gasto)
+            // Recalcula la alerta de esa categoría: si el borrado la dejó por
+            // debajo del umbral, se rearma para que vuelva a avisar si se cruza.
+            verificarAlertaPresupuestoUseCase(gasto.categoria)
+        }
     }
 
     private fun inicioDeHace(campo: Int, cantidad: Int, diaUnoDelMes: Boolean = false): Long =

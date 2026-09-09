@@ -74,6 +74,9 @@ import com.calvimonti.ordenars.ui.theme.TextoSecundario
 import com.calvimonti.ordenars.ui.theme.TextoTerciario
 import kotlinx.coroutines.delay
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.ZoneId
+import java.time.ZoneOffset
 import java.util.Date
 import java.util.Locale
 
@@ -355,12 +358,12 @@ private fun SelectorFecha(fecha: Long, onFechaChange: (Long) -> Unit) {
     }
 
     if (mostrarSelector) {
-        val estado = rememberDatePickerState(initialSelectedDateMillis = fecha)
+        val estado = rememberDatePickerState(initialSelectedDateMillis = localAPickerUtc(fecha))
         DatePickerDialog(
             onDismissRequest = { mostrarSelector = false },
             confirmButton = {
                 TextButton(onClick = {
-                    estado.selectedDateMillis?.let(onFechaChange)
+                    estado.selectedDateMillis?.let { onFechaChange(pickerUtcALocal(it)) }
                     mostrarSelector = false
                 }) { Text("Aceptar", color = Primario) }
             },
@@ -403,3 +406,26 @@ private fun ConfirmacionGuardado() {
 
 private fun formatearFechaLarga(fechaMillis: Long): String =
     SimpleDateFormat("d 'de' MMMM", Locale("es", "AR")).format(Date(fechaMillis))
+
+// El DatePicker de Material3 trabaja en UTC: `selectedDateMillis` es la
+// medianoche UTC del día elegido. Como el resto de la app formatea las fechas
+// en la zona horaria local (Argentina, UTC-3), guardar ese valor crudo hacía
+// que el gasto apareciera un día antes. Estas dos funciones traducen entre el
+// "día en UTC" del picker y un instante local del mismo día (mediodía, para no
+// pisarse con ningún cambio de hora).
+private fun pickerUtcALocal(utcMillis: Long): Long =
+    Instant.ofEpochMilli(utcMillis)
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
+        .atTime(12, 0)
+        .atZone(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli()
+
+private fun localAPickerUtc(millisLocal: Long): Long =
+    Instant.ofEpochMilli(millisLocal)
+        .atZone(ZoneId.systemDefault())
+        .toLocalDate()
+        .atStartOfDay(ZoneOffset.UTC)
+        .toInstant()
+        .toEpochMilli()

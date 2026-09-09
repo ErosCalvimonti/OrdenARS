@@ -48,6 +48,7 @@ import com.calvimonti.ordenars.domain.model.OrigenGasto
 import com.calvimonti.ordenars.ui.components.AvisoPresupuesto
 import com.calvimonti.ordenars.ui.components.CategoriaChip
 import com.calvimonti.ordenars.ui.components.GraficoTorta
+import com.calvimonti.ordenars.ui.components.PuntoEstadoPresupuesto
 import com.calvimonti.ordenars.ui.components.RebanadaGrafico
 import com.calvimonti.ordenars.ui.components.SeccionTitulo
 import com.calvimonti.ordenars.ui.components.formatearMonto
@@ -84,6 +85,7 @@ fun DashboardScreen(
     val ultimosGastos by viewModel.ultimosGastos.collectAsStateWithLifecycle()
     val categorias by viewModel.categorias.collectAsStateWithLifecycle()
     val categoriaPorNombre = remember(categorias) { categorias.associateBy { it.nombre } }
+    val porcentajePresupuesto by viewModel.porcentajePresupuestoPorCategoria.collectAsStateWithLifecycle()
 
     Scaffold(
         modifier = modifier,
@@ -165,7 +167,11 @@ fun DashboardScreen(
                 }
             } else {
                 items(ultimosGastos, key = { it.id }) { gasto ->
-                    FilaGasto(gasto = gasto, categoria = categoriaPorNombre[gasto.categoria])
+                    FilaGasto(
+                        gasto = gasto,
+                        categoria = categoriaPorNombre[gasto.categoria],
+                        porcentajePresupuesto = porcentajePresupuesto[gasto.categoria]
+                    )
                 }
             }
         }
@@ -311,21 +317,29 @@ private fun FilaPresupuestoCategoria(item: GastoPorCategoria) {
 }
 
 @Composable
-private fun FilaGasto(gasto: Gasto, categoria: Categoria?) {
+private fun FilaGasto(gasto: Gasto, categoria: Categoria?, porcentajePresupuesto: Float? = null) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(categoria?.color?.let { colorDesdeHex(it) } ?: FondoSecundario),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(categoria?.icono ?: "📦", style = MaterialTheme.typography.bodyLarge)
+        Box(contentAlignment = Alignment.BottomEnd) {
+            Box(
+                modifier = Modifier
+                    .size(40.dp)
+                    .clip(CircleShape)
+                    .background(categoria?.color?.let { colorDesdeHex(it) } ?: FondoSecundario),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(categoria?.icono ?: "📦", style = MaterialTheme.typography.bodyLarge)
+            }
+            if (porcentajePresupuesto != null) {
+                PuntoEstadoPresupuesto(
+                    porcentajeUsado = porcentajePresupuesto,
+                    colorFondo = FondoPrincipal
+                )
+            }
         }
         Spacer(Modifier.width(12.dp))
         Column(modifier = Modifier.weight(1f)) {
