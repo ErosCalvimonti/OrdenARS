@@ -71,7 +71,7 @@ sequenceDiagram
     B->>A: Notificación "Pagaste $1.500 en Rappi"
     A->>L: onNotificationPosted(sbn)
     L->>L: ¿package en BILLETERAS_CONOCIDAS y habilitado?
-    L->>P: parsear(texto)
+    L->>P: parsearNotificacion(título, texto)
     alt Pago con monto
         P-->>L: GastoDetectado(1500.0, "Rappi")
         L->>C: categorizar("Rappi") → Comida
@@ -94,6 +94,10 @@ Puntos clave:
   explícitos de pago. Saldos, promociones o transferencias entrantes no
   matchean a propósito: es preferible no registrar un gasto que registrar uno
   falso.
+- **Título y cuerpo por separado.** `parsearNotificacion` prueba primero el
+  título, después el cuerpo y recién al final los dos juntos. Como el comercio
+  se captura con `.+`, parsearlos concatenados metía el boilerplate del cuerpo
+  ("Con tu tarjeta Personal Pay") en la descripción.
 - **Formato de montos argentino.** El punto separa miles y la coma es el
   decimal (`"1.500,50"` → `1500.50`).
 - **Compra sin monto.** Algunas billeteras (confirmado con Personal Pay) avisan
@@ -109,6 +113,12 @@ Puntos clave:
 entre la descripción del comercio y las palabras clave de cada categoría. Si
 ninguna coincide, el gasto va a **Otros**. Las categorías y sus palabras clave
 son editables desde la app.
+
+Las palabras clave de hasta 3 letras (`Dia`, `YPF`) tienen que aparecer como
+palabra completa: como substring, `Dia` metía en Comida a "Radio Taxi",
+"Claudia" o "Diario". Las más largas siguen siendo substring para no perder
+descriptores de tarjeta pegados (`STEAMPOWERED.COM`, `RAPPI*RESTO`). Una
+palabra clave vacía se ignora.
 
 | Categoría | Palabras clave por defecto |
 |---|---|

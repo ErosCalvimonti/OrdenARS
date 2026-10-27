@@ -213,6 +213,7 @@ pendientes · ⬜ no implementado.
 | RNF-24 | Los componentes de UI reutilizables (tarjetas, botones, avisos, gráficos) viven en `ui/components` y se comparten entre pantallas. |
 | RNF-25 | Cada avance del desarrollo se registra en una bitácora, con las decisiones tomadas y los problemas encontrados. |
 | RNF-26 | Cada módulo se somete a pruebas funcionales manuales (emulador y teléfono físico) antes de darse por terminado; los resultados y los bugs encontrados quedan documentados. |
+| RNF-27 | La lógica de negocio (parser de notificaciones, categorización, alertas de presupuesto y repositorios) está cubierta por tests unitarios automatizados que corren en CI en cada push y pull request. |
 
 ---
 
@@ -287,7 +288,8 @@ pendientes · ⬜ no implementado.
 
 - **Requerimientos funcionales**: 49 de 51 ✅, 2 ⚠️ (RF-07 detección con monto en
   el texto — pipeline listo, falta un caso real; y ninguno ⬜).
-- **Requerimientos no funcionales**: todos cumplidos, con la salvedad de que las
-  pruebas son **funcionales manuales** (RNF-26) y no hay una suite de tests
-  automatizados.
+- **Requerimientos no funcionales**: todos cumplidos. Desde 2026-10-27 además de
+  las pruebas funcionales manuales (RNF-26) hay una suite de **50 tests
+  unitarios** (RNF-27) que corre en GitHub Actions; al escribirla aparecieron y
+  se corrigieron 3 bugs (ver la sección *Tests* del README).
 - **Código publicado** en GitHub con README, licencia MIT y build automático (GitHub Actions).

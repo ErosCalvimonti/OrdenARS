@@ -88,6 +88,33 @@ Al terminar el onboarding, la app te lleva a **Ajustes → Acceso a notificacion
 > [!NOTE]
 > La detección automática solo se puede probar en un **dispositivo físico** con las billeteras instaladas: el emulador no recibe sus notificaciones, y `adb` siempre publica como `com.android.shell`, que no está en la lista blanca.
 
+## 🧪 Tests
+
+**50 tests unitarios** (JUnit 4 + MockK + `kotlinx-coroutines-test`) que corren en la JVM, sin emulador, y en cada push/PR en GitHub Actions. El reporte HTML queda como artefacto del workflow.
+
+```bash
+./gradlew testDebugUnitTest
+# reporte: app/build/reports/tests/testDebugUnitTest/index.html
+```
+
+| Qué se testea | Casos |
+|---|---|
+| `NotificationParser` | Montos en formato argentino (`1.500,50`), variantes del texto, puntuación, descriptores con `*`, notificaciones que **no** son pagos (saldo, transferencias, promos), título y cuerpo por separado, compra sin monto |
+| `CategorizarGastoUseCase` | Palabras clave por defecto, mayúsculas, fallback a *Otros*, falsos positivos de palabras cortas, categorías creadas por el usuario |
+| `VerificarAlertaPresupuestoUseCase` | Bordes exactos del 80 % y 100 %, no repetir alertas, rearmado al borrar gastos, salto directo al 100 %, otras categorías y meses |
+| `EliminarCategoriaUseCase` | *Otros* protegida, categorías con gastos, borrado en cascada de presupuestos |
+| Repositorios | Rango del mes (bisiesto, diciembre), JSON de palabras clave con comillas/acentos/emojis, siembra idempotente, preferencias en DataStore |
+
+Los repositorios se testean de verdad contra **fakes en memoria** de los DAOs de Room y del DataStore (`app/src/test/.../fakes`), así que el test ejercita el mapeo entidad ↔ dominio y no solo un mock.
+
+### Bugs que encontraron los tests
+
+| Bug | Arreglo |
+|---|---|
+| El listener parseaba título + cuerpo juntos: "Pagaste $1.500 en Kiosco" + "Con tu tarjeta Personal Pay" guardaba el comercio *"Kiosco Con tu tarjeta Personal Pay"* y lo categorizaba como **Servicios** (por "Personal"). | `NotificationParser.parsearNotificacion` prueba título y cuerpo por separado. |
+| La palabra clave `Dia` (supermercado) matcheaba como substring: *Radio Taxi*, *Claudia* o *Diario* caían en **Comida**. | Las palabras clave de ≤ 3 letras tienen que matchear como palabra completa. |
+| Una palabra clave vacía (p. ej. `"Rappi, "` al editar) hacía que esa categoría se quedara con **todos** los gastos. | Las palabras clave vacías se ignoran. |
+
 ## 📂 Estructura del proyecto
 
 ```
@@ -105,6 +132,12 @@ app/src/main/java/com/calvimonti/ordenars/
 │   ├── navigation/     # NavGraph y bottom bar
 │   └── theme/          # Colores, tipografía (Inter) y tema
 └── di/                 # Módulos de Hilt
+
+app/src/test/java/com/calvimonti/ordenars/
+├── service/            # NotificationParser
+├── domain/             # Casos de uso y modelos
+├── data/repository/    # Repositorios (Room y DataStore con fakes)
+└── fakes/              # DAOs y DataStore en memoria
 ```
 
 ## 🗺️ Roadmap
@@ -112,7 +145,7 @@ app/src/main/java/com/calvimonti/ordenars/
 - [x] Detección automática desde notificaciones
 - [x] Presupuestos con alertas al 80 % / 100 %
 - [x] Editor de categorías y exportación a CSV
-- [ ] Tests unitarios del parser y los casos de uso
+- [x] Tests unitarios del parser y los casos de uso
 - [ ] Más patrones de notificación confirmados con casos reales
 - [ ] Registro de ingresos
 - [ ] Tema claro
@@ -129,5 +162,5 @@ Distribuido bajo licencia [MIT](./LICENSE). La tipografía Inter se distribuye b
 ---
 
 <div align="center">
-Hecho con ☕ en Argentina por <a href="https://github.com/ErosCalvimonti">Kariel Calvimonti</a>
+Hecho con ☕ en Argentina por <a href="https://github.com/ErosCalvimonti">Eros Calvimonti</a>
 </div>
