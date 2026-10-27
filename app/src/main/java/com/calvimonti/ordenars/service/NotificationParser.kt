@@ -11,10 +11,9 @@ data class GastoDetectado(
  * en Y") — notificaciones de saldo, promociones o transferencias entrantes
  * no matchean a propósito, para no registrar gastos falsos con datos que no
  * podemos interpretar bien. [parsearCompraSinMonto] cubre el otro caso real
- * confirmado: una compra avisada sin monto en el texto (ver devlog
- * 2026-08-28) — no alcanza para un GastoDetectado, pero sirve para avisarle
- * al usuario. Si en el uso real las billeteras mandan otras frases, hay que
- * sumar sus regex acá (ver devlog 2026-08-14 para el detalle de esta decisión).
+ * confirmado: una compra avisada sin monto en el texto — no alcanza para
+ * un GastoDetectado, pero sirve para avisarle al usuario. Si en el uso real
+ * las billeteras mandan otras frases, hay que sumar sus regex acá.
  */
 object NotificationParser {
 
@@ -23,7 +22,7 @@ object NotificationParser {
     // Personal Pay (y probablemente otras billeteras) avisan una compra sin
     // mencionar el monto en ningún lado de la notificación — solo el
     // comercio ("Compraste en PEDIDOSYA*HELADERIA VEN"). Confirmado con una
-    // notificación real, ver devlog 2026-08-28. No hay plata que extraer acá,
+    // notificación real. No hay plata que extraer acá,
     // así que esto no devuelve un GastoDetectado — parsearCompraSinMonto()
     // se usa aparte para al menos avisarle al usuario que compró algo.
     private val REGEX_COMPRA_SIN_MONTO = Regex("""[Cc]ompraste\s+en\s+(.+)""")

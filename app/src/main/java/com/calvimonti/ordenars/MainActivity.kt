@@ -59,8 +59,7 @@ class MainActivity : ComponentActivity() {
                 // en el historial. Si "agregar" fuera directamente el
                 // startDestination, no habría a dónde volver al guardar
                 // (popBackStack() no tiene nada que sacar) y la pantalla de
-                // confirmación se queda trabada — pasó de verdad, ver
-                // devlog 2026-08-28.
+                // confirmación se queda trabada — pasó de verdad.
                 val rutaDesdeNotificacion = intent.getStringExtra(EXTRA_RUTA_INICIAL)
 
                 OrdenARSNavGraph(

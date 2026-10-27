@@ -71,8 +71,7 @@ class OrdenARSNotificationListener : NotificationListenerService() {
             return
         }
 
-        // Sin monto en el texto (confirmado con Personal Pay, devlog
-        // 2026-08-28): no hay nada que guardar todavía, pero avisamos con
+        // Sin monto en el texto (confirmado con Personal Pay): no hay nada que guardar todavía, pero avisamos con
         // una notificación para que el usuario complete el monto a mano.
         // Ojo: se parsea SOLO el título, no textoCompleto — el cuerpo suele
         // ser un boilerplate genérico ("Con tu tarjeta Personal Pay") sin
@@ -89,9 +88,7 @@ class OrdenARSNotificationListener : NotificationListenerService() {
     }
 
     companion object {
-        // Package names verificados contra Play Store (algunos de los originales
-        // en CONTEXTO_ORDENARS.md eran placeholders que no correspondían a
-        // ningún paquete real — ver devlog 2026-08-15 para el detalle).
+        // Package names verificados contra Play Store.
         val BILLETERAS_CONOCIDAS = mapOf(
             // Billeteras y bancos con presencia fuerte en Argentina
             "ar.com.personalpay" to "Personal Pay",

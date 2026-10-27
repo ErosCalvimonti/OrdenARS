@@ -43,7 +43,7 @@ fun OrdenARSNavGraph(
     // detectada sin monto" para abrir Agregar Gasto precargado con algo
     // debajo en el historial (si "agregar" fuera directamente el
     // startDestination, popBackStack() al guardar no tendría a dónde volver
-    // y la pantalla se queda trabada — pasó de verdad, ver devlog 2026-08-28).
+    // y la pantalla se queda trabada — pasó de verdad).
     rutaExtra: String? = null
 ) {
     LaunchedEffect(rutaExtra) {

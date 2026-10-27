@@ -80,8 +80,6 @@ dependencies {
 
     implementation(libs.kotlinx.coroutines.android)
 
-    implementation(libs.ycharts)
-
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)

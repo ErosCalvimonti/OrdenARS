@@ -1,0 +1,173 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 1,
+    "identityHash": "98a0a8de7e52ef1542f8ddf553bad6d9",
+    "entities": [
+      {
+        "tableName": "gastos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `monto` REAL NOT NULL, `descripcion` TEXT NOT NULL, `categoria` TEXT NOT NULL, `fecha` INTEGER NOT NULL, `origen` TEXT NOT NULL, `nombreBilletera` TEXT NOT NULL, `textoOriginal` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "monto",
+            "columnName": "monto",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "descripcion",
+            "columnName": "descripcion",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "categoria",
+            "columnName": "categoria",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "fecha",
+            "columnName": "fecha",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "origen",
+            "columnName": "origen",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nombreBilletera",
+            "columnName": "nombreBilletera",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "textoOriginal",
+            "columnName": "textoOriginal",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_gastos_categoria",
+            "unique": false,
+            "columnNames": [
+              "categoria"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gastos_categoria` ON `${TABLE_NAME}` (`categoria`)"
+          },
+          {
+            "name": "index_gastos_fecha",
+            "unique": false,
+            "columnNames": [
+              "fecha"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_gastos_fecha` ON `${TABLE_NAME}` (`fecha`)"
+          }
+        ],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "categorias",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`nombre` TEXT NOT NULL, `icono` TEXT NOT NULL, `color` TEXT NOT NULL, `palabrasClave` TEXT NOT NULL, PRIMARY KEY(`nombre`))",
+        "fields": [
+          {
+            "fieldPath": "nombre",
+            "columnName": "nombre",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "icono",
+            "columnName": "icono",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "color",
+            "columnName": "color",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "palabrasClave",
+            "columnName": "palabrasClave",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "nombre"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      },
+      {
+        "tableName": "presupuestos",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`categoria` TEXT NOT NULL, `montoMaximo` REAL NOT NULL, `mes` INTEGER NOT NULL, `anio` INTEGER NOT NULL, PRIMARY KEY(`categoria`, `mes`, `anio`))",
+        "fields": [
+          {
+            "fieldPath": "categoria",
+            "columnName": "categoria",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "montoMaximo",
+            "columnName": "montoMaximo",
+            "affinity": "REAL",
+            "notNull": true
+          },
+          {
+            "fieldPath": "mes",
+            "columnName": "mes",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "anio",
+            "columnName": "anio",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "categoria",
+            "mes",
+            "anio"
+          ]
+        },
+        "indices": [],
+        "foreignKeys": []
+      }
+    ],
+    "views": [],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, '98a0a8de7e52ef1542f8ddf553bad6d9')"
+    ]
+  }
+}

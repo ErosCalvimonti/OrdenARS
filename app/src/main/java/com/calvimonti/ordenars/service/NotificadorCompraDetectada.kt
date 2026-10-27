@@ -26,7 +26,7 @@ const val EXTRA_RUTA_INICIAL = "ruta_inicial"
 /**
  * Postea el aviso de "detectamos una compra pero la notificación no traía
  * el monto" (ver [NotificationParser.parsearCompraSinMonto] — Personal Pay
- * es el primer caso real confirmado, devlog 2026-08-28). Tocar la
+ * es el primer caso real confirmado). Tocar la
  * notificación abre Agregar Gasto con la categoría y descripción ya
  * precargadas — el usuario solo tiene que escribir el monto.
  *

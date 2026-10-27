@@ -3,7 +3,7 @@
 **Versión:** 1.0 · **Fecha:** 2026-08-28 · **Estado del producto:** funcional, en pruebas
 
 Documento formal de requerimientos funcionales (RF) y no funcionales (RNF) de la
-aplicación móvil OrdenARS. Complementa a `CONTEXTO_ORDENARS.md`, que describe la
+aplicación móvil OrdenARS. Complementa a [`ARQUITECTURA.md`](./ARQUITECTURA.md), que describe la
 arquitectura y las decisiones de diseño.
 
 ---
@@ -290,6 +290,4 @@ pendientes · ⬜ no implementado.
 - **Requerimientos no funcionales**: todos cumplidos, con la salvedad de que las
   pruebas son **funcionales manuales** (RNF-26) y no hay una suite de tests
   automatizados.
-- **Pendiente de entrega** (no es un RF/RNF del producto sino del trabajo
-  práctico): publicación del código en un repositorio GitHub con README — el
-  `README.md` está completo; falta inicializar el repositorio y publicarlo.
+- **Código publicado** en GitHub con README, licencia MIT y build automático (GitHub Actions).
