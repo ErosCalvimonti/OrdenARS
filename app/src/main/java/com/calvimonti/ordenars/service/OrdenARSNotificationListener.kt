@@ -48,7 +48,7 @@ class OrdenARSNotificationListener : NotificationListenerService() {
         val textoCompleto = "$titulo $texto".trim()
         if (textoCompleto.isBlank()) return
 
-        val gastoDetectado = NotificationParser.parsear(textoCompleto)
+        val gastoDetectado = NotificationParser.parsearNotificacion(titulo, texto)
         if (gastoDetectado != null) {
             scopeServicio.launch {
                 val habilitada = preferenciasRepository.billeteraHabilitada(sbn.packageName).first()
@@ -76,7 +76,8 @@ class OrdenARSNotificationListener : NotificationListenerService() {
         // Ojo: se parsea SOLO el título, no textoCompleto — el cuerpo suele
         // ser un boilerplate genérico ("Con tu tarjeta Personal Pay") sin
         // relación al comercio, y como el regex es ".+" greedy, si se le
-        // pasa el texto concatenado se lo come entero de yapa.
+        // pasa el texto concatenado se lo come entero de yapa (mismo motivo
+        // por el que el pago con monto usa parsearNotificacion).
         val comercio = NotificationParser.parsearCompraSinMonto(titulo) ?: return
         scopeServicio.launch {
             val habilitada = preferenciasRepository.billeteraHabilitada(sbn.packageName).first()

@@ -27,6 +27,16 @@ object NotificationParser {
     // se usa aparte para al menos avisarle al usuario que compró algo.
     private val REGEX_COMPRA_SIN_MONTO = Regex("""[Cc]ompraste\s+en\s+(.+)""")
 
+    /**
+     * Prueba el título y el cuerpo por separado antes de probar los dos
+     * juntos. Como el regex de comercio es ".+" greedy, si el pago viene en
+     * el título y el cuerpo es un boilerplate ("Con tu tarjeta Personal Pay"),
+     * parsear el texto concatenado mete ese boilerplate en la descripción
+     * (y "Personal" termina categorizando el gasto como Servicios).
+     */
+    fun parsearNotificacion(titulo: String, texto: String): GastoDetectado? =
+        parsear(titulo) ?: parsear(texto) ?: parsear("$titulo $texto".trim())
+
     fun parsear(texto: String): GastoDetectado? {
         val match = REGEX_PAGO.find(texto) ?: return null
         val monto = parsearMonto(match.groupValues[1]) ?: return null
