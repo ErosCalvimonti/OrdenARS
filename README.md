@@ -12,6 +12,8 @@ App Android que detecta automáticamente los gastos a partir de las notificacion
 ![Min SDK](https://img.shields.io/badge/minSdk-26-3DDC84?logo=android&logoColor=white)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE)
 
+![OrdenARS: gastos registrados automáticamente desde las notificaciones de 24 bancos y billeteras](docs/cover.png)
+
 </div>
 
 ---
