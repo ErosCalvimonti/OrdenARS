@@ -40,7 +40,9 @@ class OrdenARSNotificationListener : NotificationListenerService() {
     override fun onNotificationPosted(sbn: StatusBarNotification) {
         super.onNotificationPosted(sbn)
 
-        val nombreBilletera = BILLETERAS_CONOCIDAS[sbn.packageName] ?: return
+        val nombreBilletera = BILLETERAS_CONOCIDAS[sbn.packageName]
+            ?: BILLETERAS_DE_PRUEBA[sbn.packageName]
+            ?: return
 
         val extras = sbn.notification.extras
         val titulo = extras.getCharSequence(Notification.EXTRA_TITLE)?.toString().orEmpty()
